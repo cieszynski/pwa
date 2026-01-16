@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "de.cieszynski.twa",
+        "sha256_cert_fingerprints": ["9D:B1:E1:A8:5F:70:97:98:77:16:A4:EF:3B:88:E8:2C:A7:CA:92:93:D4:3E:5C:BD:0B:90:CC:43:B5:B0:18:D9"]
+      }
+    }]
