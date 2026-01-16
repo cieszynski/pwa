@@ -1,0 +1,38 @@
+{
+    "name": "My PWA",
+    "start_url": "/",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "icons/512x512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        },
+        {
+            "src": "icons/192x192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        }
+    ],
+    "launch_handler": {
+        "client_mode": "navigate-new"
+    },
+    "file_handlers": [
+        {
+            "action": "/index.html",
+            "accept": {
+                "text/json": [
+                    ".mypwa"
+                ]
+            },
+            "icons": [
+                {
+                    "src": "icons/256x256.png",
+                    "sizes": "256x256",
+                    "type": "image/png"
+                }
+            ],
+            "launch_type": "multiple-clients"
+        }
+    ]
+}
