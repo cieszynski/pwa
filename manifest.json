@@ -1,5 +1,7 @@
 {
+    "id": "cieszynski.de/pwa/",
     "name": "My PWA",
+    "short_name": "my pwa",
     "start_url": "/",
     "display": "standalone",
     "icons": [
