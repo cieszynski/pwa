@@ -1,4 +1,6 @@
-const v = 1;
+importScripts('dberta/dberta.js');
+
+const v = 2;
 
 self.addEventListener('install', event => {
     console.log('install'/* , event */);
@@ -11,8 +13,13 @@ self.addEventListener('install', event => {
     );
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener('activate', async event => {
     console.log('activate'/* , event */);
+    await dberta.open('pwatest', {
+        1: {
+            strings: "@id,"
+        }
+    });
 });
 
 self.addEventListener('fetch', event => {

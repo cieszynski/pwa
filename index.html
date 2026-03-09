@@ -11,16 +11,33 @@
             background-color: #ddd;
         }
     </style>
-    <script>
-        try {
-            navigator.serviceWorker.register("sw.js")
-                .then(registration => {
-                    console.log(registration)
-                     navigator.serviceWorker.addEventListener('statechange', event => console.log(event.taregt.state))
-                });
-        } catch (error) {
-            console.error(`Registration failed with ${error}`);
+    <script type="module">
+        import('./test1.mjs?a=b')
+        import('./test1.mjs?a=b')
+        import('./test1.mjs?c=d')
+
+        const main = async () => {
+            await import('./dberta/dberta.js');
+            const berta = await dberta.open('pwatest', {});
+            const tx= await berta.write('strings');
+            // tx.strings.put({
+            //     id: 1, data: 'eins'
+            // })
+            console.log(await tx.strings.getAll())
         }
+
+        const registerServiceWorker = async () => {
+            try {
+                await navigator.serviceWorker.register('sw.js');
+            } catch (error) {
+                console.error(`Registration failed with ${error}`);
+            }
+        }
+
+
+        registerServiceWorker();
+        main();
+
     </script>
 </head>
 
