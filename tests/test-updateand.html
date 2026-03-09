@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>Test updateAnd</title>
+    <meta charset="utf-8">
+
+    <script src="../dberta.js"></script>
+</head>
+
+<body>
+    <h1>Test updateAnd</h1>
+    <p>For results refer to console.</p>
+    <pre>
+expected output:
+[
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "age": 10,
+        "id": 1,
+        "u": 1
+    }
+]
+
+expected output:
+[
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "age": 10,
+        "id": 1,
+        "u": 1
+    },
+    {
+        "firstname": "b",
+        "lastname": "a",
+        "age": 20,
+        "id": 2
+    },
+    {
+        "firstname": "c",
+        "lastname": "c",
+        "age": 30,
+        "id": 3
+    },
+    {
+        "firstname": "a",
+        "lastname": "b",
+        "age": 40,
+        "id": 4
+    },
+    {
+        "firstname": "c",
+        "lastname": "d",
+        "age": 50,
+        "id": 5
+    },
+    {
+        "firstname": "b",
+        "lastname": "b",
+        "age": 60,
+        "id": 6
+    }
+]
+    </pre>
+    <script>
+
+        async function runtest() {
+            try {
+                const berta = await dberta.open(document.title, {
+                    1: {
+                        user: "@id, firstname, lastname, age"
+                    }
+                });
+
+                const tx = await berta.write('user');
+
+                if (berta.updated) {
+                    [
+                        { firstname: 'a', lastname: 'a', age: 10 },
+                        { firstname: 'b', lastname: 'a', age: 20 },
+                        { firstname: 'c', lastname: 'c', age: 30 },
+                        { firstname: 'a', lastname: 'b', age: 40 },
+                        { firstname: 'c', lastname: 'd', age: 50 },
+                        { firstname: 'b', lastname: 'b', age: 60 },
+                    ].forEach((item) => {
+                        tx.user.add(item).catch(err => console.error(err));
+                    });
+                }
+                const res = await tx.user.updateAnd('firstname', dberta.eq('a'), 'lastname', dberta.eq('a'), 'age', dberta.between(10, 40), {u:1});
+                // expected output:
+                // [
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "a",
+                //         "age": 10,
+                //         "id": 1,
+                //         "u": 1
+                //     }
+                // ]
+                console.log(res);
+
+                const res1 = await tx.user.getAll();
+                // expected output:
+                // [
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "a",
+                //         "age": 10,
+                //         "id": 1,
+                //         "u": 1
+                //     },
+                //     {
+                //         "firstname": "b",
+                //         "lastname": "a",
+                //         "age": 20,
+                //         "id": 2
+                //     },
+                //     {
+                //         "firstname": "c",
+                //         "lastname": "c",
+                //         "age": 30,
+                //         "id": 3
+                //     },
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "b",
+                //         "age": 40,
+                //         "id": 4
+                //     },
+                //     {
+                //         "firstname": "c",
+                //         "lastname": "d",
+                //         "age": 50,
+                //         "id": 5
+                //     },
+                //     {
+                //         "firstname": "b",
+                //         "lastname": "b",
+                //         "age": 60,
+                //         "id": 6
+                //     }
+                // ]
+                console.log(res1);
+
+                berta.close();
+            } catch ({ name, message }) {
+                console.error(name, message);
+            }
+        }
+
+        runtest();
+    </script>
+</body>
+
+</html>

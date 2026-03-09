@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>Test Compound Key 2</title>
+    <meta charset="utf-8">
+
+    <script src="../dberta.js"></script>
+</head>
+
+<body>
+    <h1>Test Compound Key 2</h1>
+    <p>For results refer to console.</p>
+    <pre>
+expected output:
+{
+    "firstname": "a",
+    "lastname": "b",
+    "age": 40
+}
+
+expected output:
+[
+    {
+        "firstname": "a",
+        "lastname": "b",
+        "age": 40
+    },
+    {
+        "firstname": "a",
+        "lastname": "c",
+        "age": 50
+    },
+    {
+        "firstname": "b",
+        "lastname": "a",
+        "age": 20
+    }
+]
+    </pre>
+    <script>
+
+        async function runtest() {
+            try {
+                const berta = await dberta.open(document.title, {
+                    1: {
+                        user: "firstname+lastname+age,firstname, lastname, age"
+                    }
+                });
+
+                const tx = await berta.write('user');
+
+                if (berta.updated) {
+                    [
+                        { firstname: 'a', lastname: 'a', age: 10 },
+                        { firstname: 'b', lastname: 'a', age: 20 },
+                        { firstname: 'c', lastname: 'a', age: 30 },
+                        { firstname: 'a', lastname: 'b', age: 40 },
+                        { firstname: 'a', lastname: 'c', age: 50 },
+                    ].forEach((item) => {
+                        tx.user.add(item).catch(err => console.error(err));
+                    });
+                }
+
+                const res = await tx.user.get(['a', 'b', 40]);
+                // expected output:
+                // {
+                //     "firstname": "a",
+                //     "lastname": "b",
+                //     "age": 40
+                // }
+                console.log(res);
+
+                const res2 = await tx.user.getAll(dberta.between(['a', 'a', 20], ['b', 'c']));
+                // expected output:
+                // [
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "b",
+                //         "age": 40
+                //     },
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "c",
+                //         "age": 50
+                //     },
+                //     {
+                //         "firstname": "b",
+                //         "lastname": "a",
+                //         "age": 20
+                //     }
+                // ]
+                console.log(res2);
+
+                berta.close();
+            } catch ({ name, message }) {
+                console.error(name, message);
+            }
+        }
+
+        runtest();
+    </script>
+</body>
+
+</html>

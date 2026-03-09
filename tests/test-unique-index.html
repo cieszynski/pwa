@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>Test Unique Index</title>
+    <meta charset="utf-8">
+
+    <script src="../dberta.js"></script>
+</head>
+
+<body>
+    <h1>Test unique Index</h1>
+    <p>For results refer to console.</p>
+    <pre>
+expected output:
+ConstraintError: Unable to add key to index 'lastname': at least one key does not satisfy the uniqueness requirements.      
+    </pre>
+    <script>
+
+        async function runtest() {
+            try {
+                const berta = await dberta.open(document.title, {
+                    1: {
+                        user: "@id, firstname, !lastname"
+                    }
+                });
+
+                const tx = await berta.write('user');
+
+                if (berta.updated) {
+                    [
+                        { firstname: 'a', lastname: 'a' },
+                        { firstname: 'b', lastname: 'b' },
+                        { firstname: 'c', lastname: 'a' },
+                    ].forEach((item) => {
+                        tx.user.add(item).catch(err=>console.error(err));
+                    });
+                }
+
+                berta.close();
+            } catch ({ name, message }) {
+                console.error(name, message);
+            }
+        }
+
+        runtest();
+    </script>
+</body>
+
+</html>

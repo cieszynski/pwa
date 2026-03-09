@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>Test Compound Index</title>
+    <meta charset="utf-8">
+
+    <script src="../dberta.js"></script>
+</head>
+
+<body>
+    <h1>Test Compound Index</h1>
+    <p>For results refer to console.</p>
+    <pre>
+expected output:
+[
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "id": 1
+    },
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "id": 5
+    },
+    {
+        "firstname": "a",
+        "lastname": "b",
+        "id": 4
+    },
+    {
+        "firstname": "b",
+        "lastname": "a",
+        "id": 2
+    }
+]
+    </pre>
+    <script>
+
+        async function runtest() {
+            try {
+                const berta = await dberta.open(document.title, {
+                    1: {
+                        user: "@id,firstname, lastname, firstname+lastname"
+                    }
+                });
+
+                const tx = await berta.write('user');
+
+                if (berta.updated) {
+                    [
+                        { firstname: 'a', lastname: 'a' },
+                        { firstname: 'b', lastname: 'a' },
+                        { firstname: 'c', lastname: 'a' },
+                        { firstname: 'a', lastname: 'b' },
+                        { firstname: 'a', lastname: 'a' },
+                    ].forEach((item) => {
+                        tx.user.add(item).catch(err => console.error(err));
+                    });
+                }
+                const res = await tx.user.where('firstname+lastname', dberta.between(['a', 'a'], ['b', 'a']));
+                // expected output:
+                // [
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "a",
+                //         "id": 1
+                //     },
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "a",
+                //         "id": 5
+                //     },
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "b",
+                //         "id": 4
+                //     },
+                //     {
+                //         "firstname": "b",
+                //         "lastname": "a",
+                //         "id": 2
+                //     }
+                // ]
+                console.log(res);
+
+                berta.close();
+            } catch ({ name, message }) {
+                console.error(name, message);
+            }
+        }
+
+        runtest();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>Test MultiEntry Index</title>
+    <meta charset="utf-8">
+
+    <script src="../dberta.js"></script>
+</head>
+
+<body>
+    <h1>Test MultiEntry Index</h1>
+    <p>For results refer to console.</p>
+    <pre>
+expected output:
+[
+    {
+        "firstname": [
+            "a",
+            "A"
+        ],
+        "lastname": "a",
+        "id": 1
+    },
+    {
+        "firstname": "a",
+        "lastname": "b",
+        "id": 4
+    }
+]
+
+expected output:
+[
+    {
+        "firstname": [
+            "b",
+            "B"
+        ],
+        "lastname": "a",
+        "id": 2
+    }
+]     
+    </pre>
+    <script>
+
+        async function runtest() {
+            try {
+                const berta = await dberta.open(document.title, {
+                    1: {
+                        user: "@id,*firstname, lastname"
+                    }
+                });
+
+                const tx = await berta.write('user');
+
+                if (berta.updated) {
+                    [
+                        { firstname: ['a', 'A'], lastname: 'a' },
+                        { firstname: ['b', 'B'], lastname: 'a' },
+                        { firstname: 'c', lastname: 'a' },
+                        { firstname: 'a', lastname: 'b' },
+                    ].forEach((item) => {
+                        tx.user.add(item).catch(err=>console.error(err));
+                    });
+                }
+
+                const res = await tx.user.where('firstname', 'a');
+                // expected output:
+                // [
+                //     {
+                //         "firstname": [
+                //             "a",
+                //             "A"
+                //         ],
+                //         "lastname": "a",
+                //         "id": 1
+                //     },
+                //     {
+                //         "firstname": "a",
+                //         "lastname": "b",
+                //         "id": 4
+                //     }
+                // ]
+                console.log(res);
+                const res1 = await tx.user.where('firstname', 'B');
+                // expected output:
+                // [
+                //     {
+                //         "firstname": [
+                //             "b",
+                //             "B"
+                //         ],
+                //         "lastname": "a",
+                //         "id": 2
+                //     }
+                // ]
+                console.log(res1);
+
+                berta.close();
+            } catch ({ name, message }) {
+                console.error(name, message);
+            }
+        }
+
+        runtest();
+    </script>
+</body>
+
+</html>
