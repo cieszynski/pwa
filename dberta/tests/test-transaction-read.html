@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <title>Test Transaction Read</title>
+        <meta charset="utf-8">
+
+        <script src="../dberta.js"></script>
+    </head>
+
+    <body>
+        <h1>Test Transaction Read</h1>
+        <p>For results refer to console.</p>
+        <pre
+        >
+expected output:
+[
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "id": 1
+    },
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "id": 5
+    }
+]
+
+expected output:
+[
+    {
+        "title": "C",
+        "date": "03.01.2000",
+        "id": 3
+    }
+]
+
+expected output:
+ReadOnlyError: Failed to execute 'put' on 'IDBObjectStore': The transaction is read-only.
+    </pre>
+        <script>
+            async function runtest() {
+                try {
+                    const berta = await dberta.open(
+                        document.title,
+                        {
+                            1: {
+                                user: "@id,firstname, lastname",
+                                event: "@id, title, date",
+                            },
+                        },
+                    );
+
+                    const tx1 = await berta.write(
+                        "user",
+                        "event",
+                    );
+
+                    if (berta.updated) {
+                        [
+                            { firstname: "a", lastname: "a" },
+                            { firstname: "b", lastname: "a" },
+                            { firstname: "c", lastname: "a" },
+                            { firstname: "a", lastname: "b" },
+                            { firstname: "a", lastname: "a" },
+                        ].forEach((item) => {
+                            tx1.user.add(item).catch((err) =>
+                                console.error(err)
+                            );
+                        });
+
+                        [
+                            { title: "A", date: "01.01.2000" },
+                            { title: "B", date: "02.01.2000" },
+                            { title: "C", date: "03.01.2000" },
+                        ].forEach((item) => {
+                            tx1.event.add(item).catch((err) =>
+                                console.error(err)
+                            );
+                        });
+                    }
+
+                    tx1.commit();
+
+                    const tx2 = await berta.read(
+                        "user",
+                        "event",
+                    );
+
+                    tx2.user.queryAnd(
+                        "firstname",
+                        dberta.eq("a"),
+                        "lastname",
+                        dberta.eq("a"),
+                    ).then((res1) => {
+                        console.log(res1);
+                        tx2.event.where(
+                            "title",
+                            dberta.eq("C"),
+                        ).then((res2) => {
+                            console.log(res2);
+                            res1.forEach((item) => {
+                                tx2.user.put(
+                                    Object.assign(item, res2[0])
+                                ).catch((err) =>
+                                    console.error(err)
+                                );
+                            });
+                        });
+                    });
+
+                    berta.close();
+                } catch ({ name, message }) {
+                    console.error(name, message);
+                }
+            }
+
+            runtest();
+        </script>
+    </body>
+</html>

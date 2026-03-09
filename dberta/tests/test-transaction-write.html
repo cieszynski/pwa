@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <title>Test Transaction Write</title>
+        <meta charset="utf-8">
+
+        <script src="../dberta.js"></script>
+    </head>
+
+    <body>
+        <h1>Test Transaction Write</h1>
+        <p>For results refer to console.</p>
+        <pre
+        >
+expected output:
+[
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "id": 1
+    },
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "id": 5
+    }
+]
+
+expected output:
+[
+    {
+        "title": "C",
+        "date": "03.01.2000",
+        "id": 3
+    }
+]
+
+expected output:
+[
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "id": 1,
+        "date": "03.01.2000"
+    },
+    {
+        "firstname": "b",
+        "lastname": "a",
+        "id": 2
+    },
+    {
+        "firstname": "c",
+        "lastname": "a",
+        "id": 3
+    },
+    {
+        "firstname": "a",
+        "lastname": "b",
+        "id": 4
+    },
+    {
+        "firstname": "a",
+        "lastname": "a",
+        "id": 5,
+        "date": "03.01.2000"
+    }
+]
+    </pre>
+        <script>
+            async function runtest() {
+                try {
+                    const berta = await dberta.open(
+                        document.title,
+                        {
+                            1: {
+                                user: "@id,firstname, lastname",
+                                event: "@id, title, date",
+                            },
+                        },
+                    );
+
+                    const tx1 = await berta.write(
+                        "user",
+                        "event",
+                    );
+
+                    if (berta.updated) {
+                        [
+                            { firstname: "a", lastname: "a" },
+                            { firstname: "b", lastname: "a" },
+                            { firstname: "c", lastname: "a" },
+                            { firstname: "a", lastname: "b" },
+                            { firstname: "a", lastname: "a" },
+                        ].forEach((item) => {
+                            tx1.user.add(item).catch((err) =>
+                                console.error(err)
+                            );
+                        });
+
+                        [
+                            { title: "A", date: "01.01.2000" },
+                            { title: "B", date: "02.01.2000" },
+                            { title: "C", date: "03.01.2000" },
+                        ].forEach((item) => {
+                            tx1.event.add(item).catch((err) =>
+                                console.error(err)
+                            );
+                        });
+                    }
+
+                    tx1.commit();
+
+                    const tx2 = await berta.write(
+                        "user",
+                        "event",
+                    );
+
+                    tx2.user.queryAnd(
+                        "firstname",
+                        dberta.eq("a"),
+                        "lastname",
+                        dberta.eq("a"),
+                    ).then((res1) => {
+                        console.log(res1);
+                        tx2.event.where(
+                            "title",
+                            dberta.eq("C"),
+                        ).then((res2) => {
+                            console.log(res2);
+                            res1.forEach((item) => {
+                                tx2.user.put(
+                                    Object.assign(item, {date: res2[0].date})
+                                ).catch((err) =>
+                                    console.error(err)
+                                );
+                            });
+                        }).then(() => {
+                            tx2.user.getAll().then(res3=>console.log(res3))
+                        });
+                    });
+
+                    berta.close();
+                } catch ({ name, message }) {
+                    console.error(name, message);
+                }
+            }
+
+            runtest();
+        </script>
+    </body>
+</html>
