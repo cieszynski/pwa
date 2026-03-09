@@ -2,54 +2,33 @@
 <html lang="de">
 
 <head>
-    <title>PWA</title>
+    <title>PWA3</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="manifest" href="manifest.json">
     <style>
-
+        * {
+            background-color: #ddd;
+        }
     </style>
-
     <script>
-        window.addEventListener("beforeinstallprompt", event => {
-            // Suppress automatic prompting.
-            event.preventDefault();
-
-
-            install.addEventListener('click', async e => {
-                install.hidden = true;
-                const userChoice = await event.prompt();
-                alert(`user choice was: ${userChoice.outcome} / platform: ${userChoice.platform}`);
-            })
-
-            install.hidden = false;
-        });
-
-        if ("launchQueue" in window) {
-            window.launchQueue.setConsumer(async (launchParams) => {
-                if (launchParams.files) {
-                    const [fileHandle] = launchParams.files;
-                    const fileData = await fileHandle.getFile();
-
-                    document.title = fileData.name
-                    console.log(fileData)
-                    let writable = await fileHandle.createWritable();
-                    await writable.write("contents");
-                    await writable.close();
-
-                    writable = await fileHandle.createWritable();
-                    await writable.write("contents2");
-                    await writable.close();
-                }
-            });
+        try {
+            navigator.serviceWorker.register("sw.js")
+                .then(registration => {
+                    console.log(registration)
+                     navigator.serviceWorker.addEventListener('statechange', event => console.log(event.taregt.state))
+                });
+        } catch (error) {
+            console.error(`Registration failed with ${error}`);
         }
     </script>
 </head>
 
 <body>
-    PWA
+    <button onclick="postMessage('xxx')">TEST</button>
+    <script>
 
-    <button id="install" hidden>Install</button>
+    </script>
 </body>
 
 </html>

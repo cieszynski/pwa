@@ -1,6 +1,6 @@
 {
     "id": "",
-    "name": "My PWA",
+    "name": "My PWA1",
     "short_name": "my pwa",
     "start_url": "/",
     "display": "standalone",
@@ -14,7 +14,7 @@
             "src": "icons/192x192.png",
             "type": "image/png",
             "sizes": "192x192"
-        }
+ }
     ],
     "launch_handler": {
         "client_mode": "navigate-new"
