@@ -12,6 +12,32 @@
         }
     </style>
     <script type="module">
+        import { JSxdb } from './jsxdb.js';
+
+        async function run(params) {
+
+            JSxdb.init('testdb', {
+                1: {
+                    'user': "@id, firstname, lastname",
+                    'bla': "@id, firstname, lastname, !uuid"
+                }
+            }).then(db => db.close())
+
+            try {
+                const db = await JSxdb.open('testdb')
+                const [store1, store2] = await db.readwrite('user', 'bla')
+                store2.put({id:2, uuid:11})
+                 console.log(await store2.getAll())
+                db.close();
+                
+            } catch (ex) {
+                console.error(ex)
+            }
+        }
+
+        run()
+    </script>
+    <script type="modules">
         import('./test1.mjs?a=b')
         import('./test1.mjs?a=b')
         import('./test1.mjs?c=d')
