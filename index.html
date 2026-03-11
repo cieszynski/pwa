@@ -16,28 +16,28 @@
 
         async function run(params) {
 
-            JSxdb.init('testdb', {
-                1: {
-                    'user': "@id, firstname, lastname",
-                    'bla': "@id, firstname, lastname, !uuid"
-                }
-            }).then(db => db.close())
-
             try {
                 const db = await JSxdb.open('testdb')
-                const [store1, store2] = await db.write('user', 'bla')
-                console.log(store1)
-               // console.log(await store2.add({id:22, uuid:121}))
+                const [store1, store2] = await db.write('user', 'bla');
+               // console.log(await store2.add({id:2, firstname: 'klara', lastname: 'schlabotnik', uuid:2}))
+               // return
+                let r = store2
+                    .where('firstname', JSxdb.between('jup', 'kupp'))
+                     //.or('lastname', JSxdb.eq('schlabotnik'))
+                     //.and('uuid', JSxdb.eq(1))
+                    // .delete()
+                    .reverse()
+                    .limit(1)
+                    //.query()
+                    .update({
+                        x: 47
+                    })
+                    .then(r=>console.log(r))
                 
-               // console.log(await store1.add({id:22, uuid:121}))
-                 console.log(await store2.getAll())
-                 console.log(store2.name, store2.autoincrement, store2.indexnames, store2.keypath)
-                 console.log(db.version, db.name, db.storenames)
-                db.close();
-                
-            } catch (ex) {
-                console.error(ex)
+            } catch (error) {
+                console.error(error)
             }
+
         }
 
         run()
