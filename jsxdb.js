@@ -1,24 +1,35 @@
+// MIT License
 
+// Copyright (c) 2026 Stephan Cieszynski
 
 class Store {
 
-    #store
+    #store;
 
     constructor(store) {
         this.#store = store;
     }
 
-    #execute = (verb, ...args) => {
+    get autoincrement () { return this.#store.autoIncrement; }
 
-        return new Promise(async (resolve, reject) => {
-            this.#store.transaction.onerror = (event) => reject(event.target.error);
-            this.#store[verb](...args).onsuccess = (event) => resolve(event.target.result);
-        });
-    }
+    get indexnames() { return Array.from(this.#store.indexNames); }
+
+    get keypath() { return this.#store.keyPath; }
+
+    get name() { return this.#store.name; }
+
+    #execute = (verb, ...args) => new Promise(async (resolve, reject) => {
+        this.#store.transaction.onerror = (event) => reject(event.target.error);
+        this.#store[verb](...args).onsuccess = (event) => resolve(event.target.result);
+    });
+
+    abort = () => this.#store.transaction.abort();
 
     add = (obj, key) => this.#execute('add', obj, key);
 
     clear = () => this.#execute('clear');
+
+    commit = () => this.#store.transaction.commit();
 
     count = (keyOrKeyRange) => this.#execute('count', keyOrKeyRange);
 
@@ -35,6 +46,16 @@ class Store {
     put = (obj, key) => this.#execute('put', obj, key);
 }
 
+const printf = (str, ...args) => args.reduce((a, b) => a.replace('%s', b), str);
+
+class NotFoundError extends DOMException {
+
+    constructor(message, ...args) {
+
+        super(printf(message, ...args), 'NotFoundError');
+    }
+}
+
 class Database {
 
     #db;
@@ -44,29 +65,34 @@ class Database {
         this.#db = db;
     }
 
-    readwrite = (...storeNames) => {
-        try {
-            const transaction = this.#db.transaction(storeNames, 'readwrite');
+    get name() { return this.#db.name; }
 
-            return Promise.resolve(storeNames.map(storeName => {
-                return new Store(transaction.objectStore(storeName));
+    get storenames() { return Array.from(this.#db.objectStoreNames); }
+
+    get version() { return this.#db.version; }
+
+    #readwrite = (ro = false, ...storeNames) => new Promise(async (resolve, reject) => {
+
+        const missed = storeNames.filter(name => !this.#db.objectStoreNames.contains(name));
+        const error = `
+            Failed to execute 'transaction' on '%s':
+            '%s' of the specified object stores was not found.`;
+
+        if (missed.length) {
+            reject(new NotFoundError(error, this.#db.name, missed.join(',')));
+
+        } else {
+            const request = this.#db.transaction(storeNames, ro ? 'readonly' : 'readwrite');
+
+            resolve(storeNames.map(storeName => {
+                return new Store(request.objectStore(storeName));
             }));
-        } catch (ex) {
-            return Promise.reject(ex);
         }
-    }
+    });
 
-    readonly = (...storeNames) => {
-        try {
-            const transaction = this.#db.transaction(storeNames, 'readonly');
+    read = (...storeNames) => this.#readwrite(true, ...storeNames);
 
-            return Promise.resolve(storeNames.map(storeName => {
-                return new Store(transaction.objectStore(storeName));
-            }));
-        } catch (ex) {
-            return Promise.reject(ex);
-        }
-    }
+    write = (...storeNames) => this.#readwrite(false, ...storeNames);
 
     close = () => this.#db.close();
 }

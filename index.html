@@ -25,9 +25,14 @@
 
             try {
                 const db = await JSxdb.open('testdb')
-                const [store1, store2] = await db.readwrite('user', 'bla')
-                store2.put({id:2, uuid:11})
+                const [store1, store2] = await db.write('user', 'bla')
+                console.log(store1)
+               // console.log(await store2.add({id:22, uuid:121}))
+                
+               // console.log(await store1.add({id:22, uuid:121}))
                  console.log(await store2.getAll())
+                 console.log(store2.name, store2.autoincrement, store2.indexnames, store2.keypath)
+                 console.log(db.version, db.name, db.storenames)
                 db.close();
                 
             } catch (ex) {
