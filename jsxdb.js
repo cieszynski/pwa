@@ -92,7 +92,7 @@ class Store {
     });
 
     #execute_or = (verb, reverse = false, limit = 0, ...args) => new Promise((resolve, reject) => {
-        //TODO promise based {key: promise}?
+        const promises = []
         const result = new class extends Array {
             push(obj) {
                 // Objects are only stringified the same, using Set() won't work
@@ -106,7 +106,7 @@ class Store {
             ? args.pop()
             : undefined;
 
-        let threads = 0;
+        let threads = 0, t = args.length / 2;
 
         while (args.length) {
             ++threads;
@@ -117,31 +117,55 @@ class Store {
                 .index(indexName)
                 .openCursor(keyRange, reverse ? 'prev' : 'next');
             request.onsuccess = (event) => {
+                console.log(threads)
                 const cursor = event.target.result;
 
                 if (cursor && (!(limit && result.length >= limit))) {
                     switch (verb) {
                         case 'query':
-                            this.#execute_cursor_query(cursor, result);
+                            promises.push(this.#execute_cursor_query(cursor));
                             break;
                         case 'update':
-                            this.#execute_cursor_update(cursor, result, payload);
+                            promises.push(this.#execute_cursor_update(cursor, payload));
                             break;
                         case 'delete':
-                            this.#execute_cursor_delete(cursor, result);
+                            promises.push(this.#execute_cursor_delete(cursor));
                             break;
                         default:
                             console.error('unknown verb ', verb);
                     }
 
                     cursor.continue();
-                }
+                } 
 
-                if (--threads <= 0) {
-                    resolve(result);
-                }
+               // if (--threads < 0) {
+/*                     resolve(Promise.all(promises).then((array) => {
+                        console.log(array)
+                        return Array.from(
+                            new Set(array.map(entry => array[entry.id]))
+                                .values()
+                        )
+                    })); */
+                    
+                    /*                     console.log(threads, promises)
+                                        Promise
+                                            .all(promises)
+                                            .then(array => {
+                                                console.log(array)
+                                                const result = Array.from(
+                                                    new Set(array.map(entry => array[entry['id']]))
+                                                    .values()
+                                                )
+                                                resolve(result)
+                                            });
+                                            return */
+                //}
+            console.log(promises, threads, t)
             }
         }
+        Promise.all(promises).then((a)=>{
+            console.log(a)
+        })
     });
 
     #execute = (verb, ...args) => new Promise((resolve, reject) => {

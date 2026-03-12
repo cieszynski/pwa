@@ -19,21 +19,22 @@
             try {
                 const db = await JSxdb.open('testdb')
                 const [store1, store2] = await db.write('user', 'bla');
-               // console.log(await store2.add({id:2, firstname: 'klara', lastname: 'schlabotnik', uuid:2}))
-               // return
+                // console.log(await store2.add({ id: 1, firstname: 'jupp', lastname: 'schlabotnik', uuid: 1 }))
+                // console.log(await store2.add({ id: 2, firstname: 'klara', lastname: 'schlabotnik', uuid: 2 }))
+                // return
                 let r = store2
                     .where('firstname', JSxdb.between('jup', 'kupp'))
-                     //.or('lastname', JSxdb.eq('schlabotnik'))
-                     //.and('uuid', JSxdb.eq(1))
+                    .or('lastname', JSxdb.eq('schlabotnik'))
+                    //.and('uuid', JSxdb.eq(1))
                     // .delete()
-                    .reverse()
-                    .limit(1)
-                    //.query()
-                    .update({
+                    //.reverse()
+                   // .limit(1)
+                    .query()
+/*                     .update({
                         x: 47
-                    })
-                    .then(r=>console.log(r))
-                
+                    }) */
+                    .then(r => console.log(r))
+
             } catch (error) {
                 console.error(error)
             }
